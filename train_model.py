@@ -1,9 +1,9 @@
 import pandas as pd
-import joblib
+import pickle
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
-from xgboost import XGBClassifier
+from sklearn.linear_model import LogisticRegression
 
 # Load dataset
 data = pd.read_csv("fake_news_dataset.csv")
@@ -19,12 +19,6 @@ y = y.map({
     'fake': 0,
     'real': 1
 })
-
-# Remove invalid rows
-valid = y.notna()
-
-X = X[valid]
-y = y[valid]
 
 # Split data
 X_train, X_test, y_train, y_test = train_test_split(
@@ -42,19 +36,17 @@ vectorizer = TfidfVectorizer(
 
 X_train_vec = vectorizer.fit_transform(X_train)
 
-# XGBoost model
-model = XGBClassifier(
-    n_estimators=100,
-    learning_rate=0.1,
-    max_depth=6,
-    eval_metric='logloss'
-)
+# Train model
+model = LogisticRegression(max_iter=1000)
 
-# Train
 model.fit(X_train_vec, y_train)
 
-# Save using joblib
-joblib.dump(model, "model.pkl")
-joblib.dump(vectorizer, "vectorizer.pkl")
+# Save model
+with open("model.pkl", "wb") as f:
+    pickle.dump(model, f)
+
+# Save vectorizer
+with open("vectorizer.pkl", "wb") as f:
+    pickle.dump(vectorizer, f)
 
 print("Model Saved Successfully!")
