@@ -1,19 +1,12 @@
 import pandas as pd
-import pickle
+import joblib
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from xgboost import XGBClassifier
 
-# ==========================================
-# LOAD DATASET
-# ==========================================
-
+# Load dataset
 data = pd.read_csv("fake_news_dataset.csv")
-
-# ==========================================
-# PREPARE DATA
-# ==========================================
 
 # Combine title + text
 X = data['title'].fillna('') + " " + data['text'].fillna('')
@@ -21,7 +14,7 @@ X = data['title'].fillna('') + " " + data['text'].fillna('')
 # Labels
 y = data['label']
 
-# Convert labels to numeric
+# Convert labels
 y = y.map({
     'fake': 0,
     'real': 1
@@ -33,10 +26,7 @@ valid = y.notna()
 X = X[valid]
 y = y[valid]
 
-# ==========================================
-# TRAIN TEST SPLIT
-# ==========================================
-
+# Split data
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
@@ -44,10 +34,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=42
 )
 
-# ==========================================
-# TF-IDF VECTORIZATION
-# ==========================================
-
+# TF-IDF
 vectorizer = TfidfVectorizer(
     stop_words='english',
     max_df=0.7
@@ -55,10 +42,7 @@ vectorizer = TfidfVectorizer(
 
 X_train_vec = vectorizer.fit_transform(X_train)
 
-# ==========================================
-# XGBOOST MODEL
-# ==========================================
-
+# XGBoost model
 model = XGBClassifier(
     n_estimators=100,
     learning_rate=0.1,
@@ -66,17 +50,11 @@ model = XGBClassifier(
     eval_metric='logloss'
 )
 
-# Train model
+# Train
 model.fit(X_train_vec, y_train)
 
-# ==========================================
-# SAVE MODEL & VECTORIZER
-# ==========================================
-
-with open("model.pkl", "wb") as f:
-    pickle.dump(model, f)
-
-with open("vectorizer.pkl", "wb") as f:
-    pickle.dump(vectorizer, f)
+# Save using joblib
+joblib.dump(model, "model.pkl")
+joblib.dump(vectorizer, "vectorizer.pkl")
 
 print("Model Saved Successfully!")

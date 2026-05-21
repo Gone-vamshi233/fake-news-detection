@@ -1,49 +1,31 @@
 import streamlit as st
-import pickle
+import joblib
 
-# ==========================================
-# PAGE CONFIG
-# ==========================================
-
+# Page config
 st.set_page_config(
     page_title="Fake News Detection",
     page_icon="📰",
     layout="centered"
 )
 
-# ==========================================
-# LOAD MODEL & VECTORIZER
-# ==========================================
+# Load model and vectorizer
+model = joblib.load("model.pkl")
+vectorizer = joblib.load("vectorizer.pkl")
 
-with open("model.pkl", "rb") as f:
-    model = pickle.load(f)
-
-with open("vectorizer.pkl", "rb") as f:
-    vectorizer = pickle.load(f)
-
-# ==========================================
-# TITLE
-# ==========================================
-
+# Title
 st.title("📰 Fake News Detection System")
 
 st.write(
     "Enter a news article or headline to check whether it is REAL or FAKE."
 )
 
-# ==========================================
-# USER INPUT
-# ==========================================
-
+# Input
 news = st.text_area(
     "Enter News Here",
     height=200
 )
 
-# ==========================================
-# PREDICTION
-# ==========================================
-
+# Predict
 if st.button("Predict"):
 
     if news.strip() == "":
@@ -51,15 +33,14 @@ if st.button("Predict"):
 
     else:
 
-        # Convert text
+        # Transform
         news_vec = vectorizer.transform([news])
 
-        # Prediction
+        # Predict
         prediction = model.predict(news_vec)
 
-        # Show result
+        # Output
         if prediction[0] == 1:
             st.success("✅ REAL NEWS")
-
         else:
             st.error("❌ FAKE NEWS")
